@@ -164,6 +164,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .empty-state p, .chart-empty p { margin: .3rem 0 0; font-size: .8rem; }
 
 .tracking-layout { display: grid; gap: 1rem; }
+.range-control { max-width: 100%; }
 .metric-rail { display: flex; gap: .45rem; overflow-x: auto; padding-bottom: .5rem; }
 .metric-rail button { flex: 0 0 auto; border: 1px solid var(--border); background: var(--surface-2); border-radius: .8rem; padding: .65rem .8rem; display: flex; align-items: center; gap: .4rem; cursor: pointer; }
 .metric-rail button.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-dark); font-weight: 800; }
@@ -298,7 +299,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .nav-icon { font-size: 1.1rem; }
   .hero-card p { display: none; }
   .section-heading .muted { display: none; }
-  .range-control button { padding-inline: .55rem; }
+  .range-control { width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .range-control button { min-width: 0; padding-inline: .35rem; }
   .tracking-heading { align-items: flex-start; flex-direction: column; }
 }
 

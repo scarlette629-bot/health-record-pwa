@@ -45,6 +45,9 @@ try {
 
   // Trend update
   await page.getByRole('button', { name: '追蹤' }).click();
+  await page.getByRole('button', { name: '90 天', exact: true }).click();
+  await page.getByRole('button', { name: '1 年', exact: true }).click();
+  await page.getByRole('button', { name: '2 年', exact: true }).click();
   await page.locator('.metric-rail').getByRole('button', { name: /體溫/ }).click();
   await page.getByRole('img', { name: '體溫趨勢圖' }).waitFor();
   check(await page.locator('.average-card').getByText(/筆紀錄/).isVisible(), '趨勢摘要未顯示');

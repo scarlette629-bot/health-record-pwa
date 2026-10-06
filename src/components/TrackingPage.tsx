@@ -1,19 +1,19 @@
 import { useMemo, useState } from 'react';
 import { METRICS, METRIC_MAP, formatMetricValue } from '../config/metrics';
 import type { HealthRecord, MetricType } from '../types';
+import { getTrendRangeBounds, type TrendRange } from '../utils/trendRange';
 
-type RangeDays = 7 | 30 | 90;
+const RANGE_OPTIONS: Array<{ value: TrendRange; label: string; summary: string }> = [
+  { value: '7d', label: '7 天', summary: '最近 7 天' },
+  { value: '30d', label: '30 天', summary: '最近 30 天' },
+  { value: '90d', label: '90 天', summary: '最近 90 天' },
+  { value: '1y', label: '1 年', summary: '最近 1 年' },
+  { value: '2y', label: '2 年', summary: '最近 2 年' },
+];
 
 const SERIES_COLORS = ['#119da4', '#ef5966', '#2898d5', '#ec8b35', '#5269d4', '#26a85d'];
 
-function startOfRange(days: RangeDays) {
-  const date = new Date();
-  date.setDate(date.getDate() - (days - 1));
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function TrendChart({ records, type }: { records: HealthRecord[]; type: MetricType }) {
+function TrendChart({ records, type, range }: { records: HealthRecord[]; type: MetricType; range: TrendRange }) {
   const definition = METRIC_MAP[type];
   const points = [...records].sort((a, b) => a.measuredAt.localeCompare(b.measuredAt));
   const fields = definition.fields.filter((field) => field.inputType !== 'select' && points.some((record) => typeof record.values[field.key] === 'number'));
@@ -54,7 +54,10 @@ function TrendChart({ records, type }: { records: HealthRecord[]; type: MetricTy
         })}
         {points.map((record, index) => {
           const show = points.length <= 7 || index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 5) === 0;
-          return show ? <text key={record.id} x={x(index)} y={height - 18} textAnchor="middle" className="axis-text">{new Intl.DateTimeFormat('zh-TW', { month: 'numeric', day: 'numeric' }).format(new Date(record.measuredAt))}</text> : null;
+          const dateFormat = range.endsWith('y')
+            ? { year: '2-digit', month: 'numeric' } as const
+            : { month: 'numeric', day: 'numeric' } as const;
+          return show ? <text key={record.id} x={x(index)} y={height - 18} textAnchor="middle" className="axis-text">{new Intl.DateTimeFormat('zh-TW', dateFormat).format(new Date(record.measuredAt))}</text> : null;
         })}
       </svg>
       <div className="chart-legend">
@@ -66,9 +69,17 @@ function TrendChart({ records, type }: { records: HealthRecord[]; type: MetricTy
 
 export function TrackingPage({ records }: { records: HealthRecord[] }) {
   const [type, setType] = useState<MetricType>('bloodPressure');
-  const [days, setDays] = useState<RangeDays>(30);
-  const periodRecords = useMemo(() => records.filter((record) => record.type === type && new Date(record.measuredAt) >= startOfRange(days)), [records, type, days]);
+  const [range, setRange] = useState<TrendRange>('30d');
+  const typeRecords = useMemo(() => records.filter((record) => record.type === type), [records, type]);
+  const periodRecords = useMemo(() => {
+    const { start, end } = getTrendRangeBounds(typeRecords.map((record) => record.measuredAt), range);
+    return typeRecords.filter((record) => {
+      const measuredAt = new Date(record.measuredAt);
+      return measuredAt >= start && measuredAt <= end;
+    });
+  }, [typeRecords, range]);
   const definition = METRIC_MAP[type];
+  const rangeSummary = RANGE_OPTIONS.find((option) => option.value === range)?.summary ?? '';
   const numericFields = definition.fields.filter((field) => field.inputType !== 'select');
   const average = periodRecords.length && numericFields.length
     ? Object.fromEntries(numericFields.flatMap((field) => {
@@ -83,7 +94,7 @@ export function TrackingPage({ records }: { records: HealthRecord[] }) {
         <div className="workspace-heading tracking-heading">
           <div><span className="pill-label">追蹤</span><h1>健康趨勢</h1></div>
           <div className="segmented range-control" aria-label="趨勢期間">
-            {([7, 30, 90] as RangeDays[]).map((range) => <button key={range} className={days === range ? 'active' : ''} onClick={() => setDays(range)}>{range} 天</button>)}
+            {RANGE_OPTIONS.map((option) => <button key={option.value} className={range === option.value ? 'active' : ''} onClick={() => setRange(option.value)}>{option.label}</button>)}
           </div>
         </div>
         <div className="tracking-layout">
@@ -92,10 +103,10 @@ export function TrackingPage({ records }: { records: HealthRecord[] }) {
           </aside>
           <div className="trend-panel">
             <div className="trend-summary">
-              <div><span className="metric-icon" style={{ background: definition.softColor }}>{definition.icon}</span><div><small>最近 {days} 天</small><h2>{definition.label}趨勢</h2></div></div>
+              <div><span className="metric-icon" style={{ background: definition.softColor }}>{definition.icon}</span><div><small>{rangeSummary}</small><h2>{definition.label}趨勢</h2></div></div>
               <div className="average-card"><small>{numericFields.length ? '期間平均' : '結果類型'}</small><strong>{numericFields.length ? (average ? formatMetricValue(type, average) : '—') : '質性檢查'}</strong><span>{periodRecords.length} 筆紀錄</span></div>
             </div>
-            <TrendChart records={periodRecords} type={type} />
+            <TrendChart records={periodRecords} type={type} range={range} />
             <div className="reference-box"><strong>追蹤提示</strong><p>{definition.reference} 圖表僅呈現個人紀錄變化，不提供診斷。</p></div>
           </div>
         </div>
