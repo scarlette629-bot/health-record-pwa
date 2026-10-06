@@ -1,5 +1,13 @@
-const CACHE_NAME = 'health-record-v3';
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/app-icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE_NAME = 'health-record-v4';
+const BASE_PATH = '/health-record-pwa/';
+const APP_SHELL = [
+  BASE_PATH,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}manifest.webmanifest`,
+  `${BASE_PATH}icons/app-icon.svg`,
+  `${BASE_PATH}icons/icon-192.png`,
+  `${BASE_PATH}icons/icon-512.png`,
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -16,12 +24,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match('/index.html')));
+    event.respondWith(fetch(event.request).catch(() => caches.match(`${BASE_PATH}index.html`)));
     return;
   }
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-      if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+      const requestUrl = new URL(event.request.url);
+      if (response.ok && requestUrl.origin === self.location.origin && requestUrl.pathname.startsWith(BASE_PATH)) {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
       }
@@ -29,3 +38,4 @@ self.addEventListener('fetch', (event) => {
     }))
   );
 });
+
