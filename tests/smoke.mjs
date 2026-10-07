@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
+import { fileURLToPath } from 'node:url';
 
-const baseURL = process.env.BASE_URL || 'http://127.0.0.1:4173';
+const baseURL = process.env.BASE_URL || 'http://127.0.0.1:4173/health-record-pwa/';
 const cdpURL = process.env.CDP_URL;
 const browser = cdpURL
   ? await chromium.connectOverCDP(cdpURL)
@@ -21,6 +22,27 @@ async function countText(text) {
 try {
   await page.goto(baseURL, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: /照顧自己從記錄開始/ }).waitFor();
+
+  // Data backup and CSV import entry
+  await page.getByRole('button', { name: '資料匯入與備份' }).click();
+  await page.getByRole('dialog', { name: 'CSV 備份與匯入' }).waitFor();
+  check(await page.getByRole('button', { name: '分享至 Google Drive' }).isVisible(), 'Google Drive 分享入口未顯示');
+  const exportDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: '下載全部 CSV' }).click();
+  check((await exportDownload).suggestedFilename().endsWith('.csv'), 'CSV 匯出未產生 CSV 檔案');
+  await page.locator('input[type="file"]').setInputFiles(fileURLToPath(new URL('./fixtures/blood-lipids.csv', import.meta.url)));
+  await page.getByText('匯入預覽', { exact: true }).waitFor();
+  check(await page.locator('.import-preview').getByText('4', { exact: true }).first().isVisible(), 'CSV 匯入預覽筆數錯誤');
+  await page.getByRole('button', { name: '確認匯入 4 筆' }).click();
+  await page.getByText('已匯入 4 筆紀錄，圖表同步完成').waitFor();
+  check((await page.getByRole('button', { name: '查看血脂歷史' }).innerText()).includes('4 項結果'), 'CSV 匯入後 Dashboard 未更新');
+
+  await page.getByRole('button', { name: '資料匯入與備份' }).click();
+  await page.locator('input[type="file"]').setInputFiles(fileURLToPath(new URL('./fixtures/blood-lipids.csv', import.meta.url)));
+  await page.getByText('匯入預覽', { exact: true }).waitFor();
+  const duplicatePreview = await page.locator('.import-preview').innerText();
+  check(duplicatePreview.includes('0\n可匯入') && duplicatePreview.includes('4\n重複略過'), 'CSV 重複紀錄未正確略過');
+  await page.getByRole('button', { name: '關閉' }).click();
 
   // Create
   await page.getByRole('button', { name: '新增體溫紀錄' }).click();
@@ -72,7 +94,7 @@ try {
   check(await countText('77.7 kg'), '重新開啟後 IndexedDB 資料未保留');
 
   // Manifest and service worker / offline shell
-  const manifestResponse = await page.request.get(`${baseURL}/manifest.webmanifest`);
+  const manifestResponse = await page.request.get(new URL('manifest.webmanifest', baseURL).toString());
   check(manifestResponse.ok(), 'Manifest 無法讀取');
   await page.evaluate(async () => Boolean(await navigator.serviceWorker?.ready));
   await context.setOffline(true);
@@ -80,8 +102,9 @@ try {
   await page.getByRole('heading', { name: /照顧自己從記錄開始/ }).waitFor();
   check(await countText('77.7 kg'), '離線重新開啟後資料未顯示');
 
-  console.log('PASS create → dashboard → history → update → trend → delete → persistence → offline');
+  console.log('PASS CSV export/import/deduplicate → create → dashboard → history → update → trend → delete → persistence → offline');
 } finally {
   await context.close();
   await browser.close();
 }
+

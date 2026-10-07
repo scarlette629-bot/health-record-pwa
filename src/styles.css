@@ -238,6 +238,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .dialog-header h2 { margin: 0; font-size: 1.2rem; }
 .two-column-fields { display: grid; gap: .8rem; margin: .9rem 0; }
 .privacy-note, .success-box { padding: .75rem; border-radius: .7rem; background: var(--brand-soft); color: var(--brand-dark); font-size: .78rem; }
+.data-dialog { width: min(640px, 100%); }
+.data-manager-content { display: grid; gap: 1rem; }
+.data-section, .import-preview { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--border); border-radius: .9rem; background: var(--surface-2); }
+.data-section h3, .import-preview h3 { margin: 0; color: var(--brand-dark); }
+.data-section p, .import-preview p { margin: .25rem 0 0; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.data-section > small { color: var(--muted); }
+.data-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+.data-actions > * { flex: 1 1 12rem; text-align: center; }
+.file-button { display: grid; place-items: center; cursor: pointer; }
+.file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.preview-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem; }
+.preview-stats span { min-width: 0; display: flex; flex-direction: column; align-items: center; padding: .55rem .3rem; border-radius: .65rem; background: var(--surface); color: var(--muted); font-size: .68rem; text-align: center; }
+.preview-stats strong { color: var(--ink); font-size: 1.05rem; }
+.preview-stats .success strong { color: var(--brand-dark); }
+.preview-stats .error strong { color: var(--danger); }
+.import-errors { max-height: 8rem; overflow-y: auto; margin: 0; padding: .7rem .7rem .7rem 1.8rem; border-radius: .65rem; background: color-mix(in srgb, var(--danger) 9%, var(--surface)); color: var(--danger); font-size: .75rem; line-height: 1.55; }
 .install-dialog { position: relative; padding: 1.4rem; text-align: center; }
 .dialog-close { position: absolute; right: .8rem; top: .8rem; }
 .install-visual { height: 7rem; display: flex; align-items: center; justify-content: center; gap: 1rem; }
@@ -302,6 +318,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .range-control { width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .range-control button { min-width: 0; padding-inline: .35rem; }
   .tracking-heading { align-items: flex-start; flex-direction: column; }
+  .preview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -313,3 +330,4 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 @keyframes pop-in { from { transform: scale(.96); opacity: .6; } }
 @keyframes toast-in { from { transform: translate(-50%, 20px); opacity: 0; } }
 @keyframes pulse { 50% { transform: scale(1.06); } }
+

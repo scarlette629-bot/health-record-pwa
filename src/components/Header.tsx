@@ -5,12 +5,13 @@ interface HeaderProps {
   settings: AppSettings;
   installAvailable: boolean;
   onProfile: () => void;
+  onDataManager: () => void;
   onInstall: () => void;
   onToggleTheme: () => void;
   onChangeFont: (direction: -1 | 1) => void;
 }
 
-export function Header({ profile, settings, installAvailable, onProfile, onInstall, onToggleTheme, onChangeFont }: HeaderProps) {
+export function Header({ profile, settings, installAvailable, onProfile, onDataManager, onInstall, onToggleTheme, onChangeFont }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="brand-row">
@@ -25,6 +26,7 @@ export function Header({ profile, settings, installAvailable, onProfile, onInsta
         <button className="profile-chip" onClick={onProfile} aria-label="編輯個人資料">
           <span aria-hidden="true">👤</span><span>{profile.displayName || '本人'}</span>
         </button>
+        <button className="square-button" onClick={onDataManager} aria-label="資料匯入與備份" title="CSV 與 Google Drive">☁️</button>
         <button className={`square-button install-button ${installAvailable ? 'has-update' : ''}`} onClick={onInstall} aria-label="安裝應用程式" title="安裝 PWA">＋</button>
         <button className="square-button" onClick={onToggleTheme} aria-label={settings.theme === 'dark' ? '切換淺色模式' : '切換深色模式'} title="深色模式">
           {settings.theme === 'dark' ? '☀️' : '🌙'}
@@ -37,3 +39,4 @@ export function Header({ profile, settings, installAvailable, onProfile, onInsta
     </header>
   );
 }
+

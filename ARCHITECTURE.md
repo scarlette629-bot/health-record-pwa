@@ -24,15 +24,16 @@
 - 7／30／90 天趨勢與統計摘要。
 - 深色模式、三級字級、響應式版面。
 - PWA Manifest、Service Worker、安裝提示、基本離線能力。
+- CSV 匯出、系統分享至 Google 雲端硬碟、自有 CSV 匯入預覽、欄位驗證與重複略過。
 - Repository 資料介面，日後可換成 API／Supabase／Firebase／HIS adapter。
 
 ## 3. User Flow
 
-總覽 → 快速新增／記錄頁選類型 → 填寫數值與測量時間 → 儲存 → Dashboard 與歷史同步 → 編輯／刪除 → 趨勢同步更新。個人資料與顯示設定從頂部工具列進入。
+總覽 → 快速新增／記錄頁選類型 → 填寫數值與測量時間 → 儲存 → Dashboard 與歷史同步 → 編輯／刪除 → 趨勢同步更新。個人資料、顯示設定與 CSV 資料管理從頂部工具列進入。CSV 匯入流程為：選擇類型 → 選擇檔案 → 預覽驗證結果 → 確認匯入 → Dashboard、歷史與趨勢同步更新。
 
 ## 4. Navigation Structure
 
-- 全域 Header：品牌、本人、安裝、深色模式、字級、更多／個人資料。
+- 全域 Header：品牌、本人、CSV／Google Drive 資料管理、安裝、深色模式、字級。
 - 主導覽：總覽／記錄／追蹤。
 - 記錄頁次導覽：指標選擇／歷史紀錄。
 - Modal：新增／編輯、個人資料、安裝說明、刪除確認。
@@ -47,7 +48,7 @@
 
 ## 6. UI Component Structure
 
-`AppShell` → `Header` + `PrimaryNav` + Page；Page 包含 `Dashboard`, `RecordWorkspace`（`MetricPicker`, `HistoryList`）, `TrackingPage`（`TrendChart`）；全域 overlays 包含 `RecordForm`, `ProfileDialog`, `InstallDialog`, `ConfirmDialog`, `Toast`。
+`AppShell` → `Header` + `PrimaryNav` + Page；Page 包含 `Dashboard`, `RecordWorkspace`（`MetricPicker`, `HistoryList`）, `TrackingPage`（`TrendChart`）；全域 overlays 包含 `RecordForm`, `ProfileDialog`, `DataManagerDialog`, `InstallDialog`, `ConfirmDialog`, `Toast`。`utils/csv` 負責 CSV 解析、匯出、欄位別名、資料驗證與重複判斷，UI 不直接處理格式細節。
 
 ## 待確認
 
@@ -57,3 +58,4 @@
 - 與院方帳號、儀器或 HIS 的登入、授權、同步及審核流程。
 
 本 MVP 不提供診斷，不將任何參考值視為醫療判定；所有開發與測試資料均為虛構資料。
+

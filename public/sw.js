@@ -1,4 +1,4 @@
-const CACHE_NAME = 'health-record-v4';
+const CACHE_NAME = 'health-record-v5';
 const BASE_PATH = '/health-record-pwa/';
 const APP_SHELL = [
   BASE_PATH,

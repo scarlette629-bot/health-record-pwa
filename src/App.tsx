@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dashboard } from './components/Dashboard';
+import { DataManagerDialog } from './components/DataManagerDialog';
 import { DeleteDialog, InstallDialog, ProfileDialog } from './components/Dialogs';
 import { Header } from './components/Header';
 import { PrimaryNav, type AppView } from './components/PrimaryNav';
@@ -37,6 +38,7 @@ export default function App() {
   const [deleteRecord, setDeleteRecord] = useState<HealthRecord>();
   const [showProfile, setShowProfile] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
+  const [showDataManager, setShowDataManager] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
   const [toast, setToast] = useState('');
   const [recordInitialType, setRecordInitialType] = useState<MetricType>();
@@ -124,6 +126,13 @@ export default function App() {
     setToast('個人資料已儲存');
   }
 
+  async function importRecords(importedRecords: HealthRecord[]) {
+    for (const record of importedRecords) await healthRepository.saveRecord(record);
+    await refreshRecords();
+    setShowDataManager(false);
+    setToast(`已匯入 ${importedRecords.length} 筆紀錄，圖表同步完成`);
+  }
+
   async function requestInstall() {
     if (!installPrompt) return;
     await installPrompt.prompt();
@@ -147,6 +156,7 @@ export default function App() {
         settings={settings}
         installAvailable={Boolean(installPrompt)}
         onProfile={() => setShowProfile(true)}
+        onDataManager={() => setShowDataManager(true)}
         onInstall={() => setShowInstall(true)}
         onToggleTheme={() => updateSettings({ ...settings, theme: settings.theme === 'light' ? 'dark' : 'light' })}
         onChangeFont={(direction) => {
@@ -165,7 +175,9 @@ export default function App() {
       {deleteRecord && <DeleteDialog record={deleteRecord} onClose={() => setDeleteRecord(undefined)} onConfirm={confirmDelete} />}
       {showProfile && <ProfileDialog profile={profile} onClose={() => setShowProfile(false)} onSave={saveProfile} />}
       {showInstall && <InstallDialog canPrompt={Boolean(installPrompt)} installed={isStandalone()} onClose={() => setShowInstall(false)} onInstall={requestInstall} />}
+      {showDataManager && <DataManagerDialog records={records} onClose={() => setShowDataManager(false)} onImport={importRecords} />}
       {toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}
     </div>
   );
 }
+
