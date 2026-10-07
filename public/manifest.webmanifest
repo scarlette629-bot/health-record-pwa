@@ -1,8 +1,8 @@
 {
-  "name": "個人健康資料管理",
-  "short_name": "健康紀錄",
-  "description": "在裝置上安全保存個人健康紀錄",
-  "lang": "zh-Hant",
+  "name": "Self-Care 個人健康管理",
+  "short_name": "Self-Care",
+  "description": "記錄、追蹤並安全保存在裝置上的個人健康資料",
+  "lang": "zh-TW",
   "start_url": "/health-record-pwa/",
   "scope": "/health-record-pwa/",
   "display": "standalone",
@@ -19,4 +19,5 @@
     { "name": "查看趨勢", "short_name": "趨勢", "url": "/health-record-pwa/?view=tracking", "icons": [{ "src": "/health-record-pwa/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
+
 

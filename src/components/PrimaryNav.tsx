@@ -1,19 +1,23 @@
+import type { Locale, TranslationKey } from '../i18n';
+import { t } from '../i18n';
+
 export type AppView = 'dashboard' | 'record' | 'tracking';
 
-const ITEMS: Array<{ id: AppView; label: string; icon: string }> = [
-  { id: 'dashboard', label: '總覽', icon: '▥' },
-  { id: 'record', label: '記錄', icon: '✎' },
-  { id: 'tracking', label: '追蹤', icon: '⌁' },
+const ITEMS: Array<{ id: AppView; labelKey: TranslationKey; icon: string }> = [
+  { id: 'dashboard', labelKey: 'nav.dashboard', icon: '▥' },
+  { id: 'record', labelKey: 'nav.record', icon: '✎' },
+  { id: 'tracking', labelKey: 'nav.tracking', icon: '⌁' },
 ];
 
-export function PrimaryNav({ view, onChange }: { view: AppView; onChange: (view: AppView) => void }) {
+export function PrimaryNav({ view, locale, onChange }: { view: AppView; locale: Locale; onChange: (view: AppView) => void }) {
   return (
-    <nav className="primary-nav" aria-label="主要功能">
+    <nav className="primary-nav" aria-label={t('nav.main', locale)}>
       {ITEMS.map((item) => (
         <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => onChange(item.id)} aria-current={view === item.id ? 'page' : undefined}>
-          <span className="nav-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+          <span className="nav-icon" aria-hidden="true">{item.icon}</span><span>{t(item.labelKey, locale)}</span>
         </button>
       ))}
     </nav>
   );
 }
+

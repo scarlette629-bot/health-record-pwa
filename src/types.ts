@@ -1,3 +1,5 @@
+import type { Locale } from './i18n';
+
 export type MetricType =
   | 'bloodPressure'
   | 'heartRate'
@@ -38,6 +40,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   fontScale: 'small' | 'normal' | 'large';
   seeded: boolean;
+  locale?: Locale;
 }
 
 export interface MetricField {
@@ -65,3 +68,4 @@ export interface MetricDefinition {
   fields: MetricField[];
   reference: string;
 }
+

@@ -66,7 +66,7 @@ try {
   check(await countText('37.4 °C'), '修改後歷史紀錄未更新');
 
   // Trend update
-  await page.getByRole('button', { name: '追蹤' }).click();
+  await page.getByRole('button', { name: '趨勢' }).click();
   await page.getByRole('button', { name: '90 天', exact: true }).click();
   await page.getByRole('button', { name: '1 年', exact: true }).click();
   await page.getByRole('button', { name: '2 年', exact: true }).click();
@@ -75,9 +75,9 @@ try {
   check(await page.locator('.average-card').getByText(/筆紀錄/).isVisible(), '趨勢摘要未顯示');
 
   // Delete
-  await page.getByRole('button', { name: '記錄' }).click();
+  await page.getByRole('button', { name: '紀錄' }).click();
   await page.getByRole('button', { name: '歷史', exact: true }).click();
-  await page.getByRole('button', { name: /體溫/ }).click();
+  await page.getByRole('group', { name: '歷史紀錄篩選' }).getByRole('button', { name: '🌡️ 體溫', exact: true }).click();
   const updatedRow = page.locator('.history-item').filter({ hasText: '37.4 °C' });
   await updatedRow.getByRole('button', { name: '刪除體溫紀錄' }).click();
   await page.getByRole('button', { name: '確認刪除' }).click();
@@ -85,7 +85,7 @@ try {
   check(await page.locator('.history-item').filter({ hasText: '37.4 °C' }).count() === 0, '刪除後紀錄仍存在');
 
   // Persistence after reopen/reload
-  await page.getByRole('button', { name: '總覽' }).click();
+  await page.getByRole('button', { name: '首頁' }).click();
   await page.getByRole('button', { name: '新增體重紀錄' }).click();
   await page.getByLabel('體重 (kg)').fill('77.7');
   await page.getByRole('button', { name: '新增紀錄', exact: true }).click();
@@ -102,9 +102,19 @@ try {
   await page.getByRole('heading', { name: /照顧自己從記錄開始/ }).waitFor();
   check(await countText('77.7 kg'), '離線重新開啟後資料未顯示');
 
+  // Cleanup fake persistence record so repeated smoke tests remain isolated.
+  await context.setOffline(false);
+  await page.getByRole('button', { name: '紀錄' }).click();
+  await page.getByRole('button', { name: '歷史', exact: true }).click();
+  await page.getByRole('group', { name: '歷史紀錄篩選' }).getByRole('button', { name: '⚖️ 體重', exact: true }).click();
+  const persistenceRow = page.locator('.history-item').filter({ hasText: '77.7 kg' });
+  await persistenceRow.getByRole('button', { name: '刪除體重紀錄' }).click();
+  await page.getByRole('button', { name: '確認刪除' }).click();
+
   console.log('PASS CSV export/import/deduplicate → create → dashboard → history → update → trend → delete → persistence → offline');
 } finally {
   await context.close();
   await browser.close();
 }
+
 

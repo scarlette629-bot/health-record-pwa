@@ -7,7 +7,11 @@ import { PrimaryNav, type AppView } from './components/PrimaryNav';
 import { RecordForm } from './components/RecordForm';
 import { RecordWorkspace } from './components/RecordWorkspace';
 import { TrackingPage } from './components/TrackingPage';
+import { UpdateBanner } from './components/UpdateBanner';
+import { APP_DISPLAY_VERSION } from './config/version';
 import { healthRepository } from './data/healthRepository';
+import { DEFAULT_LOCALE, t } from './i18n';
+import { activateServiceWorkerUpdate, PWA_UPDATE_AVAILABLE_EVENT, type PwaUpdateAvailableDetail } from './pwa/registerServiceWorker';
 import type { AppSettings, HealthRecord, MetricType, UserProfile } from './types';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -15,7 +19,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
-const DEFAULT_SETTINGS: AppSettings = { theme: 'light', fontScale: 'normal', seeded: false };
+const DEFAULT_SETTINGS: AppSettings = { theme: 'light', fontScale: 'normal', seeded: false, locale: DEFAULT_LOCALE };
 const DEFAULT_PROFILE: UserProfile = { displayName: '本人', sex: '' };
 
 function initialView(): AppView {
@@ -43,6 +47,8 @@ export default function App() {
   const [toast, setToast] = useState('');
   const [recordInitialType, setRecordInitialType] = useState<MetricType>();
   const [recordInitialMode, setRecordInitialMode] = useState<'picker' | 'history'>('picker');
+  const [updateRegistration, setUpdateRegistration] = useState<ServiceWorkerRegistration>();
+  const locale = settings.locale ?? DEFAULT_LOCALE;
 
   const refreshRecords = useCallback(async () => setRecords(await healthRepository.listRecords()), []);
 
@@ -65,6 +71,14 @@ export default function App() {
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    const handleUpdate = (event: Event) => {
+      setUpdateRegistration((event as CustomEvent<PwaUpdateAvailableDetail>).detail.registration);
+    };
+    window.addEventListener(PWA_UPDATE_AVAILABLE_EVENT, handleUpdate);
+    return () => window.removeEventListener(PWA_UPDATE_AVAILABLE_EVENT, handleUpdate);
   }, []);
 
   useEffect(() => {
@@ -108,7 +122,7 @@ export default function App() {
     await refreshRecords();
     setFormType(undefined);
     setEditingRecord(undefined);
-    setToast(editingRecord ? '紀錄已更新，趨勢同步完成' : '紀錄已儲存，總覽同步完成');
+    setToast(t(editingRecord ? 'toast.recordUpdated' : 'toast.recordSaved', locale));
   }
 
   async function confirmDelete() {
@@ -116,21 +130,21 @@ export default function App() {
     await healthRepository.deleteRecord(deleteRecord.id);
     await refreshRecords();
     setDeleteRecord(undefined);
-    setToast('紀錄已刪除，趨勢同步完成');
+    setToast(t('toast.recordDeleted', locale));
   }
 
   async function saveProfile(next: UserProfile) {
     await healthRepository.saveProfile(next);
     setProfile(next);
     setShowProfile(false);
-    setToast('個人資料已儲存');
+    setToast(t('toast.profileSaved', locale));
   }
 
   async function importRecords(importedRecords: HealthRecord[]) {
     for (const record of importedRecords) await healthRepository.saveRecord(record);
     await refreshRecords();
     setShowDataManager(false);
-    setToast(`已匯入 ${importedRecords.length} 筆紀錄，圖表同步完成`);
+    setToast(t('toast.importComplete', locale, { count: importedRecords.length }));
   }
 
   async function requestInstall() {
@@ -140,20 +154,21 @@ export default function App() {
     if (result.outcome === 'accepted') {
       setInstallPrompt(undefined);
       setShowInstall(false);
-      setToast('安裝完成');
+      setToast(t('toast.installComplete', locale));
     }
   }
 
   const fontIndex = useMemo(() => ['small', 'normal', 'large'].indexOf(settings.fontScale), [settings.fontScale]);
 
-  if (loading) return <div className="app-loading"><div className="brand-mark"><span>+</span></div><strong>正在準備健康紀錄…</strong></div>;
+  if (loading) return <div className="app-loading"><img src={`${import.meta.env.BASE_URL}brand/self-care-logo.png`} alt="Self-Care" /><strong>{t('app.loading')}</strong></div>;
 
   return (
     <div className="app-shell">
-      <a className="skip-link" href="#main-content">跳至主要內容</a>
+      <a className="skip-link" href="#main-content">{t('a11y.skipToContent', locale)}</a>
       <Header
         profile={profile}
         settings={settings}
+        locale={locale}
         installAvailable={Boolean(installPrompt)}
         onProfile={() => setShowProfile(true)}
         onDataManager={() => setShowDataManager(true)}
@@ -165,11 +180,12 @@ export default function App() {
           updateSettings({ ...settings, fontScale: next });
         }}
       />
-      <PrimaryNav view={view} onChange={(next) => { setRecordInitialType(undefined); setRecordInitialMode('picker'); navigate(next); }} />
+      <PrimaryNav view={view} locale={locale} onChange={(next) => { setRecordInitialType(undefined); setRecordInitialMode('picker'); navigate(next); }} />
+      {updateRegistration && <UpdateBanner locale={locale} onUpdate={() => activateServiceWorkerUpdate(updateRegistration)} onDismiss={() => setUpdateRegistration(undefined)} />}
       {view === 'dashboard' && <Dashboard records={records} profile={profile} onAdd={openAdd} onOpenHistory={openHistory} />}
       {view === 'record' && <RecordWorkspace key={`${recordInitialType ?? 'all'}-${recordInitialMode}`} records={records} initialType={recordInitialType} initialMode={recordInitialMode} onAdd={openAdd} onEdit={(record) => { setEditingRecord(record); setFormType(record.type); }} onDelete={setDeleteRecord} />}
       {view === 'tracking' && <TrackingPage records={records} />}
-      <footer className="app-footer"><span>🔒 資料僅儲存在此裝置</span><span>本工具不提供醫療診斷</span></footer>
+      <footer className="app-footer"><span>{t('footer.localOnly', locale)}</span><span>{t('footer.notDiagnosis', locale)}</span><span>Self-Care · {APP_DISPLAY_VERSION}</span></footer>
 
       {formType && <RecordForm type={formType} existing={editingRecord} onClose={() => { setFormType(undefined); setEditingRecord(undefined); }} onSave={saveRecord} />}
       {deleteRecord && <DeleteDialog record={deleteRecord} onClose={() => setDeleteRecord(undefined)} onConfirm={confirmDelete} />}
@@ -180,4 +196,5 @@ export default function App() {
     </div>
   );
 }
+
 

@@ -55,8 +55,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   padding: .95rem clamp(1rem, 4vw, 2.2rem) .8rem;
 }
 .brand-row { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: .75rem; }
-.brand-mark { width: 3.35rem; aspect-ratio: 1; flex: 0 0 auto; border: 3px solid var(--brand-dark); border-radius: 50%; display: grid; place-items: center; background: var(--surface); box-shadow: inset 0 0 0 3px var(--brand-soft); }
-.brand-mark span { color: var(--brand-dark); font-weight: 900; font-size: 2.55rem; line-height: .7; transform: translateY(-2px); }
+.brand-mark-image { width: 3.35rem; height: 3.35rem; flex: 0 0 auto; object-fit: contain; }
 .brand-copy { min-width: 0; display: flex; flex-direction: column; line-height: 1.22; }
 .brand-copy strong { font-size: clamp(1.1rem, 4.5vw, 1.55rem); letter-spacing: .02em; white-space: nowrap; }
 .brand-copy span { color: var(--muted); font-size: clamp(.73rem, 2.5vw, .96rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -273,11 +272,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .toast { position: fixed; z-index: 120; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 2rem); display: flex; align-items: center; gap: .55rem; background: #0a2a43; color: #fff; box-shadow: 0 12px 36px rgba(0,0,0,.28); border-radius: 999px; padding: .72rem 1rem; font-weight: 700; font-size: .82rem; animation: toast-in .25s ease-out; }
 .toast span { width: 1.35rem; height: 1.35rem; display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: #fff; }
 
+.update-banner { position: sticky; top: 4.45rem; z-index: 19; width: min(1180px, calc(100% - 1.5rem)); margin: .75rem auto 0; display: grid; grid-template-columns: auto 1fr; gap: .65rem .8rem; align-items: center; padding: .8rem; border: 1px solid #75c8cf; border-radius: 1rem; background: color-mix(in srgb, var(--surface) 94%, #dff8f6); box-shadow: var(--shadow); }
+.update-banner-icon { width: 2.25rem; height: 2.25rem; display: grid; place-items: center; border-radius: 50%; background: var(--brand-soft); color: var(--brand-dark); font-size: 1.3rem; font-weight: 900; }
+.update-banner strong { display: block; }
+.update-banner p { margin: .1rem 0 0; color: var(--muted); font-size: .72rem; }
+.update-banner-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .5rem; }
+.update-banner-actions button { min-height: 2.45rem; padding-block: .45rem; }
+
 .app-footer { width: min(1180px, calc(100% - 1.5rem)); margin: 0 auto 1.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem 1.5rem; color: var(--muted); font-size: .7rem; }
 .app-loading { min-height: 100vh; display: flex; flex-direction: column; gap: 1rem; justify-content: center; align-items: center; color: var(--brand-dark); }
-.app-loading .brand-mark { animation: pulse 1.5s ease-in-out infinite; }
+.app-loading img { width: min(17rem, 72vw); height: auto; object-fit: contain; animation: pulse 1.5s ease-in-out infinite; }
 
 @media (min-width: 560px) {
+  .update-banner { grid-template-columns: auto 1fr auto; }
+  .update-banner-actions { grid-column: auto; }
   .metric-grid, .metric-picker-grid { grid-template-columns: repeat(2, 1fr); }
   .date-period-grid, .two-column-fields { grid-template-columns: 1fr 1fr; }
   .history-item { grid-template-columns: auto 1fr auto; align-items: center; }
@@ -306,7 +314,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 }
 
 @media (max-width: 390px) {
-  .brand-mark { width: 3rem; }
+  .brand-mark-image { width: 3rem; height: 3rem; }
   .brand-copy strong { font-size: 1.02rem; }
   .utility-row { gap: .35rem; }
   .profile-chip { padding-inline: .65rem; }
@@ -330,4 +338,5 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 @keyframes pop-in { from { transform: scale(.96); opacity: .6; } }
 @keyframes toast-in { from { transform: translate(-50%, 20px); opacity: 0; } }
 @keyframes pulse { 50% { transform: scale(1.06); } }
+
 

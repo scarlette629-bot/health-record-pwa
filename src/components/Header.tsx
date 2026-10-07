@@ -1,8 +1,11 @@
 import type { AppSettings, UserProfile } from '../types';
+import type { Locale } from '../i18n';
+import { t } from '../i18n';
 
 interface HeaderProps {
   profile: UserProfile;
   settings: AppSettings;
+  locale: Locale;
   installAvailable: boolean;
   onProfile: () => void;
   onDataManager: () => void;
@@ -11,32 +14,33 @@ interface HeaderProps {
   onChangeFont: (direction: -1 | 1) => void;
 }
 
-export function Header({ profile, settings, installAvailable, onProfile, onDataManager, onInstall, onToggleTheme, onChangeFont }: HeaderProps) {
+export function Header({ profile, settings, locale, installAvailable, onProfile, onDataManager, onInstall, onToggleTheme, onChangeFont }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="brand-row">
-        <div className="brand-mark" aria-hidden="true"><span>+</span></div>
+        <img className="brand-mark-image" src={`${import.meta.env.BASE_URL}brand/self-care-mark.png`} alt="" aria-hidden="true" />
         <div className="brand-copy">
-          <strong>個人健康資料管理</strong>
-          <span>Personal Health Data Manager</span>
+          <strong>{t('app.name', locale)}</strong>
+          <span>{t('app.subtitle', locale)}</span>
         </div>
-        <div className="online-badge" title="資料僅儲存在此裝置"><span className="status-dot" /> 本機儲存</div>
+        <div className="online-badge" title={t('header.localStorageTitle', locale)}><span className="status-dot" /> {t('header.localStorage', locale)}</div>
       </div>
-      <div className="utility-row" aria-label="應用程式工具">
-        <button className="profile-chip" onClick={onProfile} aria-label="編輯個人資料">
+      <div className="utility-row" aria-label={t('header.tools', locale)}>
+        <button className="profile-chip" onClick={onProfile} aria-label={t('header.profile', locale)}>
           <span aria-hidden="true">👤</span><span>{profile.displayName || '本人'}</span>
         </button>
-        <button className="square-button" onClick={onDataManager} aria-label="資料匯入與備份" title="CSV 與 Google Drive">☁️</button>
-        <button className={`square-button install-button ${installAvailable ? 'has-update' : ''}`} onClick={onInstall} aria-label="安裝應用程式" title="安裝 PWA">＋</button>
-        <button className="square-button" onClick={onToggleTheme} aria-label={settings.theme === 'dark' ? '切換淺色模式' : '切換深色模式'} title="深色模式">
+        <button className="square-button" onClick={onDataManager} aria-label={t('header.dataManager', locale)} title="CSV 與 Google Drive">☁️</button>
+        <button className={`square-button install-button ${installAvailable ? 'has-update' : ''}`} onClick={onInstall} aria-label={t('header.install', locale)} title="PWA">＋</button>
+        <button className="square-button" onClick={onToggleTheme} aria-label={t(settings.theme === 'dark' ? 'header.lightMode' : 'header.darkMode', locale)} title={t('header.darkMode', locale)}>
           {settings.theme === 'dark' ? '☀️' : '🌙'}
         </button>
-        <div className="font-controls" aria-label="字級調整">
-          <button onClick={() => onChangeFont(-1)} aria-label="縮小字級">A−</button>
-          <button onClick={() => onChangeFont(1)} aria-label="放大字級">A＋</button>
+        <div className="font-controls" aria-label={t('header.fontSize', locale)}>
+          <button onClick={() => onChangeFont(-1)} aria-label={t('header.fontSmaller', locale)}>A−</button>
+          <button onClick={() => onChangeFont(1)} aria-label={t('header.fontLarger', locale)}>A＋</button>
         </div>
       </div>
     </header>
   );
 }
+
 

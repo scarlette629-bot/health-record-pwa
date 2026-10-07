@@ -1,4 +1,5 @@
 import type { AppSettings, HealthRecord, MetricType, UserProfile } from '../types';
+import { DEFAULT_LOCALE } from '../i18n';
 
 const DB_NAME = 'health-record-pwa';
 const DB_VERSION = 1;
@@ -105,8 +106,10 @@ class IndexedDbHealthRepository implements HealthRepository {
   async getSettings(): Promise<AppSettings> {
     const db = await this.dbPromise;
     const transaction = db.transaction(SETTINGS_STORE, 'readonly');
-    return (await requestAsPromise(transaction.objectStore(SETTINGS_STORE).get('appSettings'))) ?? {
-      theme: 'light', fontScale: 'normal', seeded: false,
+    const saved = await requestAsPromise<AppSettings | undefined>(transaction.objectStore(SETTINGS_STORE).get('appSettings'));
+    return {
+      theme: 'light', fontScale: 'normal', seeded: false, locale: DEFAULT_LOCALE,
+      ...saved,
     };
   }
 
@@ -172,3 +175,4 @@ class IndexedDbHealthRepository implements HealthRepository {
 }
 
 export const healthRepository: HealthRepository = new IndexedDbHealthRepository();
+
